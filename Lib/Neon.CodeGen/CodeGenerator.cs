@@ -1411,7 +1411,14 @@ namespace Neon.CodeGen
                                 continue;
                             }
 
-                            var propertyTypeReference = ResolveTypeReference(property.Type);
+                            var propertyTypeReference  = ResolveTypeReference(property.Type);
+
+                            defaultValueExpression = property.DefaultValueExpression;
+
+                            if (defaultValueExpression == null)
+                            {
+                                defaultValueExpression = $"default({ResolveTypeReference(property.Type)})";
+                            }
 
                             switch (property.DefaultValueHandling)
                             {
@@ -1435,8 +1442,6 @@ namespace Neon.CodeGen
                                     {
                                         writer.WriteLine();
                                     }
-
-                                    defaultValueExpression = property.DefaultValueExpression;
 
                                     writer.WriteLine($"                if (this.{property.Name} == {defaultValueExpression})");
                                     writer.WriteLine($"                {{");
