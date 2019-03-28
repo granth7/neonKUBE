@@ -185,6 +185,18 @@ namespace TestCodeGen.DataModel
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate, Order = 3)]
         [DefaultValue("Populate")]
         string Populate { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = 4)]
+        [DefaultValue(5)]
+        int IntValue { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = 5)]
+        [DefaultValue(true)]
+        bool BoolValue { get; set; }
+
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate, Order = 6)]
+        [DefaultValue(MyEnum1.Three)]
+        MyEnum1 EnumVValue { get; set; }
     }
 
     [NoCodeGen]
