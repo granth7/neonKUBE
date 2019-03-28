@@ -150,7 +150,8 @@ OPTIONS:
                     if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
                     {
                         Console.Error.WriteLine("*** ERROR: This command requires elevated administrator permissions.");
-                        Program.Exit(1);
+                        Program.Exit(1, noException: true);
+                        return 1;
                     }
                 }
                 else if (NeonHelper.IsOSX)
@@ -416,20 +417,15 @@ OPTIONS:
             }
             catch (ProgramExitException e)
             {
-                if (ProgramRunner.Current != null)
-                {
-                    return e.ExitCode;
-                }
-                else
-                {
-                    Environment.Exit(e.ExitCode);
-                }
+                Program.Exit(e.ExitCode, noException: true);
+                return e.ExitCode;
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine($"*** ERROR: {NeonHelper.ExceptionError(e)}");
                 Console.Error.WriteLine(string.Empty);
                 Program.Exit(1, noException: true);
+                return 1;
             }
 
             Program.Exit(0, noException: true);
@@ -557,8 +553,13 @@ OPTIONS:
         /// <summary>
         /// Exits the program returning the specified process exit code.
         /// </summary>
-        /// <param name="noException">Optionally exit the program immediately rather than throwing a <see cref="ProgramExitException"/>.</param>
         /// <param name="exitCode">The exit code.</param>
+        /// <param name="noException">
+        /// Optionally avoid throwing a <see cref="ProgramExitException"/> for non-zero exit codes
+        /// and just return.  This is used for thge special case where the call is being made
+        /// directly from <see cref="Program.Main(string[])"/> and throwing the exception is
+        /// undesirable.
+        /// </param>
         public static void Exit(int exitCode, bool noException = false)
         {
             // Ensure that all sensitive files and folders are encrypted at rest.  We're 
@@ -568,7 +569,7 @@ OPTIONS:
 
             if (noException)
             {
-                Environment.Exit(exitCode);
+                return;
             }
             else
             {

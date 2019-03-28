@@ -148,7 +148,7 @@ pwd-3
                     result = runner.Execute(Program.Main, "password", "ls");
                     Assert.Equal(0, result.ExitCode);
                     TestHelper.AssertEqualLines(
-    @"pwd-1
+@"pwd-1
 pwd-3
 ",
                         result.OutputText);
