@@ -298,7 +298,13 @@ OPTIONS:
                     // We can clear this folder because we know that there shouldn't be
                     // any other files in here.
 
-                    NeonHelper.DeleteFolderContents(LogPath);
+                    // $todo(jeff.lill):
+                    //
+                    // I'm going to disable log purging for now because it's not clear
+                    // to me that these should be deleted before EVERY command.  Perhaps
+                    // we should make this a command centric operation.
+
+                   // NeonHelper.DeleteFolderContents(LogPath);
                 }
 
                 //-------------------------------------------------------------
