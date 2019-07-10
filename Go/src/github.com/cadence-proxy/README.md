@@ -231,9 +231,9 @@ The cadence-proxy project follows the [golang-standard project layout](https://g
 ```
 cadence-proxy/
     bin/
-        cadence-proxy.linux.dll
+        cadence-proxy.linux.so
         cadence-proxy.linux.h
-        cadence-proxy.osx.dll
+        cadence-proxy.osx.so
         cadence-proxy.osx.h
         cadence-proxy.win.dll
         cadence-proxy.win.h 
@@ -306,11 +306,11 @@ The cadence-proxy is written in Golang and needs to be built into windows, linux
 
 ## Prerequisites for building in Windows
 
-Because we are building the cadence-proxy into shared C binaries and then into Windows .dll's, we need a runtime environment for gcc to support binaries native to Windows 64/32-bit operating systems.  The recommended tool for this is [MinGW](http://www.mingw.org/ "MinGW").  MinGW (Minimalist GNU for Windows) is a minimalist development environment for native Microsoft Windows applications.  Install MinGW [here](https://sourceforge.net/projects/mingw-w64/ "MinGW for windows download"), and follow these [installation instructions](https://code.visualstudio.com/docs/cpp/config-mingw "MinGW installation instructions for Windows").  You only need to follow instruction through the "Prerequisites" section.  Make sure that when you install, you install for your specific architecture (i.e. x86_64 (AMD64)).  
+Because we are building the cadence-proxy into shared C binaries, in Windows we need a runtime environment for GCC to support binaries native to Windows 64/32-bit operating systems.  The recommended tool for this is [MinGW](http://www.mingw.org/ "MinGW").  MinGW (Minimalist GNU for Windows) is a minimalist development environment for native Microsoft Windows applications.  Install MinGW [here](https://sourceforge.net/projects/mingw-w64/ "MinGW for windows download"), and follow these [installation instructions](https://code.visualstudio.com/docs/cpp/config-mingw "MinGW installation instructions for Windows").  You only need to follow instruction through the "Prerequisites" section.  Make sure that when you install, you install for your specific architecture (i.e. x86_64 (AMD64)).  
 
 ## Building the cadence-proxy for neonKUBE.sln Build
 
-Building the cadence-proxy Golang executables is part of the neonKUBE.sln build.  This happens in `$NF_ROOT/Go/build-cadence-proxy.ps1`, which is a powershell script that builds a cadence-proxy Golang executable for windows, linux, and OSX.  The [neonKUBE](https://github.com/nforgeio/neonKUBE "nforgeio/neonKUBE") repository includes source code for all Go dependencies necessary for building the cadence-proxy Golang executables, so there are no further steps required for compiling and building the executables.  These dependencies can be found in `$NF_ROOT/Go/src/github.com/cadence-proxy/vendor`.  The `vendor` directory and `$NF_ROOT/Go/src/github.com/cadence-proxy/Gopkg.lock` are generated, by the Golang tool [dep](https://github.com/golang/dep "dep GitHub").  Dep is the dependency management tool for Go and is the convention for managing dependencies in Golang projects.  Upon successful completion of the build script, 3 executables, `cadence-proxy.win.dll`, `cadence-proxy.linux.dll`, and `cadence-proxy.osx.dll` are placed in `$NF_ROOT/Build`, along with 3 `C` header files: `cadence-proxy.linux.h`, `cadence-proxy.win.h`, `cadence-proxy.osx.h`. 
+Building the cadence-proxy Golang executables is part of the neonKUBE.sln build.  This happens in `$NF_ROOT/Go/build-cadence-proxy.ps1`, which is a powershell script that builds a cadence-proxy Golang executable for windows, linux, and OSX.  The [neonKUBE](https://github.com/nforgeio/neonKUBE "nforgeio/neonKUBE") repository includes source code for all Go dependencies necessary for building the cadence-proxy Golang executables, so there are no further steps required for compiling and building the executables.  These dependencies can be found in `$NF_ROOT/Go/src/github.com/cadence-proxy/vendor`.  The `vendor` directory and `$NF_ROOT/Go/src/github.com/cadence-proxy/Gopkg.lock` are generated, by the Golang tool [dep](https://github.com/golang/dep "dep GitHub").  Dep is the dependency management tool for Go and is the convention for managing dependencies in Golang projects.  Upon successful completion of the build script, 3 executables, `cadence-proxy.win.dll`, `cadence-proxy.linux.so`, and `cadence-proxy.osx.so` are placed in `$NF_ROOT/Build`, along with 3 `C` header files: `cadence-proxy.linux.h`, `cadence-proxy.win.h`, `cadence-proxy.osx.h`. 
 
 ## Building the cadence-proxy for development on the cadence-proxy
 
@@ -329,7 +329,7 @@ in the cadence-proxy project root (`$NF_ROOT/Go/src/github.com/cadence-proxy`). 
 ```
 mingw32-make.exe
 ```
-Upon successful completion, the cadence-proxy.win.dll and cadence-proxy.win.h files be placed into `$NF_ROOT/Go/src/github.com/cadence-proxy/bin`.  By default, the `Makefile` does not build the .dll's for Linux or OSX because a different GCC is needed to do so.
+Upon successful completion, the cadence-proxy.win.dll and cadence-proxy.win.h files be placed into `$NF_ROOT/Go/src/github.com/cadence-proxy/bin`.  By default, the `Makefile` does not build the .so's for Linux or OSX because a different GCC is needed to do so.
 
 ### Steps Before Committing
 

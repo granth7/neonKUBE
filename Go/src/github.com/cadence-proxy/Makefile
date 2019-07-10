@@ -42,9 +42,9 @@ PROGS = cadenceproxy
 # executable names
 WIN := cadence-proxy.win.dll
 WIN_HEADER := cadence-proxy.win.h
-LINUX := cadence-proxy.linux.dll
+LINUX := cadence-proxy.linux.so
 LINUX_HEADER := cadence-proxy.linux.h
-OSX := cadence-proxy.osx.dll
+OSX := cadence-proxy.osx.so
 OSX_HEADER := cadence-proxy.osx.h
 
 # Use dep to update and grab source
