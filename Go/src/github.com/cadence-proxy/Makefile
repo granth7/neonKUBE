@@ -16,7 +16,7 @@
 # limitations under the License.
 
 .PHONY: test bins clean
-default: test
+default: test-no-unix
 
 # export to the path
 export PATH := $(GOPATH)/bin:$(PATH)
@@ -33,16 +33,19 @@ NEON_TEST_DIR := $(NF_ROOT)/Test/Test.Neon.Cadence/bin/Debug/netcoreapp3.0
 MESSAGES_TEST_DIR=./internal/messages
 TEST_DIRS := $(MESSAGES_TEST_DIR)
 
-# Gather all source code		
-ALL_SRC := $(shell find ./cmd/cadenceproxy -name "*.go")
+# Gather source code		
+SRC := $(APP_DIR)/main.go
 
 # programs in the /cmd dir to build
 PROGS = cadenceproxy
 
 # executable names
-WIN := cadence-proxy.win.exe
-LINUX := cadence-proxy.linux
-OSX := cadence-proxy.osx
+WIN := cadence-proxy.win.dll
+WIN_HEADER := cadence-proxy.win.h
+LINUX := cadence-proxy.linux.dll
+LINUX_HEADER := cadence-proxy.linux.h
+OSX := cadence-proxy.osx.dll
+OSX_HEADER := cadence-proxy.osx.h
 
 # Use dep to update and grab source
 # for dependencies
@@ -50,40 +53,70 @@ dep-ensured:
 	dep ensure
 
 cadence-proxy-windows: dep-ensured $(ALL_SRC)
-	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -ldflags="-w -s" -race -v -o bin/$(WIN) $(APP_DIR)/*.go
+	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(WIN) $(APP_DIR)/*.go
 
 cadence-proxy-linux: dep-ensured $(ALL_SRC)
-	env GOOS=linux GOARCH=amd64 go build -i -ldflags="-w -s" -v -o bin/$(LINUX) $(APP_DIR)/*.go
+	env GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(LINUX) $(APP_DIR)/*.go
 
 cadence-proxy-osx: dep-ensured $(ALL_SRC)
-	env GOOS=darwin GOARCH=amd64 go build -i -ldflags="-w -s" -v -o bin/$(OSX) $(APP_DIR)/*.go
+	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(OSX) $(APP_DIR)/*.go
 
-cadenceproxy: cadence-proxy-linux \
-	cadence-proxy-windows \
+cadenceproxy: cadence-proxy-windows \
+	cadence-proxy-linux \
 	cadence-proxy-osx
 
 bins: cadenceproxy \
 
-test: bins
+test-no-unix: cadence-proxy-windows
 	rm -f test/messages.test
 	rm -f $(LOG_DIR)/test.log
 	echo $(TEST_DIRS)
 
 	# test messages package
-	go test -v -o test/messages.test -coverprofile $(LOG_DIR)/messages-cover.out $(MESSAGES_TEST_DIR) | tee -a $(LOG_DIR)/test.log
+	go test -race -v -o test/messages.test -coverprofile $(LOG_DIR)/messages-cover.out $(MESSAGES_TEST_DIR) | tee -a $(LOG_DIR)/test.log
+	go tool cover -html=$(LOG_DIR)/messages-cover.out -o $(LOG_DIR)/messages-cover.html
+
+test-no-windows: cadence-proxy-linux \
+	cadence-proxy-osx 
+	
+	rm -f test/messages.test
+	rm -f $(LOG_DIR)/test.log
+	echo $(TEST_DIRS)
+
+	# test messages package
+	go test -race -v -o test/messages.test -coverprofile $(LOG_DIR)/messages-cover.out $(MESSAGES_TEST_DIR) | tee -a $(LOG_DIR)/test.log
+	go tool cover -html=$(LOG_DIR)/messages-cover.out -o $(LOG_DIR)/messages-cover.html
+
+
+test-bins: bins
+	rm -f test/messages.test
+	rm -f $(LOG_DIR)/test.log
+	echo $(TEST_DIRS)
+
+	# test messages package
+	go test -race -v -o test/messages.test -coverprofile $(LOG_DIR)/messages-cover.out $(MESSAGES_TEST_DIR) | tee -a $(LOG_DIR)/test.log
 	go tool cover -html=$(LOG_DIR)/messages-cover.out -o $(LOG_DIR)/messages-cover.html
 	
 clean:
 	rm -Rf bin/*
 	
+	# test files and logs
 	rm -f test/messages.test
 	rm -f $(LOG_DIR)/test.log
 	rm -f $(LOG_DIR)/messages-cover.out
 	rm -f $(LOG_DIR)/messages-cover.html
 
+	# dll files
 	rm -f $(BUILD_DIR)/$(WIN)
 	rm -f $(BUILD_DIR)/$(LINUX)
 	rm -f $(BUILD_DIR)/$(OSX)
+
+	# header files
+	rm -f $(BUILD_DIR)/$(WIN_HEADER)
+	rm -f $(BUILD_DIR)/$(LINUX_HEADER)
+	rm -f $(BUILD_DIR)/$(OSX_HEADER)
+
+	# compressed test executables
 	rm -f $(COMPRESSED_DIR)/$(WIN).gz
 	rm -f $(COMPRESSED_DIR)/$(LINUX).gz
 	rm -f $(COMPRESSED_DIR)/$(OSX).gz

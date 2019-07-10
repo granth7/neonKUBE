@@ -181,6 +181,7 @@ The ProxyRequest class is inherited by all request messages. Its purpose is to a
 ```
 type ProxyRequest struct {
     *ProxyMessage
+    ReplyType messagetypes.MessageType
 }
 ```
 
@@ -230,36 +231,42 @@ The cadence-proxy project follows the [golang-standard project layout](https://g
 ```
 cadence-proxy/
     bin/
-        cadence-proxy.linux
-        cadence-proxy.osx
-        cadence-proxy.win.exe 
+        cadence-proxy.linux.dll
+        cadence-proxy.linux.h
+        cadence-proxy.osx.dll
+        cadence-proxy.osx.h
+        cadence-proxy.win.dll
+        cadence-proxy.win.h 
     cmd/
         cadenceproxy/
             main.go
     internal/
+        globals.go
         cadence/
             cadenceclient/
                 factory.go
                 helper.go 
-            cadencedomain/
                 domain_status.go
             cadenceerrors/
-                error_types.go
+                types.go
                 error.go
             cadenceworkers/
                 workers.go
             cadenceworkflows/
-                workflow_execution_context.go
+                contexts.go
+                child_contexts.go
         endpoints/
             router.go
             message.go
             echo.go
             common.go
-            proxy_reply_helper.go
-            proxy_request_helper.go
+            operation.go
+            cancellable.go
+            reply_handler.go
+            request_handler.go
             reply_builder.go
         logger/
-            setup_atomic.go
+            setup.go
         messages/
             types/
                 message_types.go
@@ -268,10 +275,12 @@ cadence-proxy/
             proxy_request.go
             workflow_request.go
             workflow_reply.go
+            activity_request.go
+            activity_reply.go
+            message_factory.go
             *
             * (all inheriting message types)
             *
-            message_factory.go
         server/
             instance.go
     test/
@@ -293,11 +302,15 @@ cadence-proxy/
 
 # Running and Maintaining the Cadence Proxy
 
-The cadence-proxy is written in Golang and needs to be built into windows, linux, and OSX executables.  You must have Golang installed on your machine to build the Golang executables.  If you do not have Golang installed, check out [install Golang](https://golang.org/dl/ "Installing Golang") and for Windows machines, download and install the Microsoft Windows `.msi`.  Follow the installation instructions on the [download page](https://golang.org/doc/install?download=go1.12.4.windows-amd64.msi "The Go Programming Language: Getting Started"). 
+The cadence-proxy is written in Golang and needs to be built into windows, linux, and OSX executables.  You must have Golang installed on your machine to build the Golang executables.  If you do not have Golang installed, check out [install Golang](https://golang.org/dl/ "Installing Golang") and for Windows machines, download and install the Microsoft Windows `.msi`.  Follow the installation instructions on the [download page](https://golang.org/doc/install?download=go1.12.4.windows-amd64.msi "The Go Programming Language: Getting Started").
+
+## Prerequisites for building in Windows
+
+Because we are building the cadence-proxy into shared C binaries and then into Windows .dll's, we need a runtime environment for gcc to support binaries native to Windows 64/32-bit operating systems.  The recommended tool for this is [MinGW](http://www.mingw.org/ "MinGW").  MinGW (Minimalist GNU for Windows) is a minimalist development environment for native Microsoft Windows applications.  Install MinGW [here](https://sourceforge.net/projects/mingw-w64/ "MinGW for windows download"), and follow these [installation instructions](https://code.visualstudio.com/docs/cpp/config-mingw "MinGW installation instructions for Windows").  You only need to follow instruction through the "Prerequisites" section.  Make sure that when you install, you install for your specific architecture (i.e. x86_64 (AMD64)).  
 
 ## Building the cadence-proxy for neonKUBE.sln Build
 
-Building the cadence-proxy Golang executables is part of the neonKUBE.sln build.  This happens in `$NF_ROOT/Go/build-cadence-proxy.ps1`, which is a powershell script that builds a cadence-proxy Golang executable for windows, linux, and OSX.  The [neonKUBE](https://github.com/nforgeio/neonKUBE "nforgeio/neonKUBE") repository includes source code for all Go dependencies necessary for building the cadence-proxy Golang executables, so there are no further steps required for compiling and building the executables.  These dependencies can be found in `$NF_ROOT/Go/src/github.com/cadence-proxy/vendor`.  The `vendor` directory and `$NF_ROOT/Go/src/github.com/cadence-proxy/Gopkg.lock` are generated, by the Golang tool [dep](https://github.com/golang/dep "dep GitHub").  Dep is the dependency management tool for Go and is the convention for managing dependencies in Golang projects.  Upon successful completion of the build script, 3 executables, `cadence-proxy.win.exe`, `cadence-proxy.linux`, and `cadence-proxy.osx` are placed in `$NF_ROOT/Build`.
+Building the cadence-proxy Golang executables is part of the neonKUBE.sln build.  This happens in `$NF_ROOT/Go/build-cadence-proxy.ps1`, which is a powershell script that builds a cadence-proxy Golang executable for windows, linux, and OSX.  The [neonKUBE](https://github.com/nforgeio/neonKUBE "nforgeio/neonKUBE") repository includes source code for all Go dependencies necessary for building the cadence-proxy Golang executables, so there are no further steps required for compiling and building the executables.  These dependencies can be found in `$NF_ROOT/Go/src/github.com/cadence-proxy/vendor`.  The `vendor` directory and `$NF_ROOT/Go/src/github.com/cadence-proxy/Gopkg.lock` are generated, by the Golang tool [dep](https://github.com/golang/dep "dep GitHub").  Dep is the dependency management tool for Go and is the convention for managing dependencies in Golang projects.  Upon successful completion of the build script, 3 executables, `cadence-proxy.win.dll`, `cadence-proxy.linux.dll`, and `cadence-proxy.osx.dll` are placed in `$NF_ROOT/Build`, along with 3 `C` header files: `cadence-proxy.linux.h`, `cadence-proxy.win.h`, `cadence-proxy.osx.h`. 
 
 ## Building the cadence-proxy for development on the cadence-proxy
 
@@ -312,22 +325,21 @@ This will install or update the dep package in your machine's `$GOPATH`.  Runnin
 ```
 make
 ```
-in the cadence-proxy project root (`$NF_ROOT/Go/src/github.com/cadence-proxy`).  In order to run `make`, you must have a console that can run the command.  [Cmder](https://cmder.net/ "Cmder.net") is a good console emulator for windows that provides some nice extra console functionality (like `make`) not included in the windows Command Prompt.  Upon successful completion, the Golang executables will be placed into `$NF_ROOT/Go/src/github.com/cadence-proxy/bin`.  To run the windows executable, simply change directories from the cadence-proxy project root to `$NF_ROOT/Go/src/github.com/cadence-proxy/bin`, and run in the console:
-
+in the cadence-proxy project root (`$NF_ROOT/Go/src/github.com/cadence-proxy`).  If you do not already have a GNU development environment for windows that allows you to run the `make` command, then you can use the one that comes with MinGW.  You will need to run:
 ```
-cadence-proxy.win.exe
+mingw32-make.exe
 ```
-The executable should run and the cadence-proxy server will start up.  
+Upon successful completion, the cadence-proxy.win.dll and cadence-proxy.win.h files be placed into `$NF_ROOT/Go/src/github.com/cadence-proxy/bin`.  By default, the `Makefile` does not build the .dll's for Linux or OSX because a different GCC is needed to do so.
 
 ### Steps Before Committing
 
 Before committing any work on the cadence-proxy, first you must build, test, and then clean up your mess: Golang executables, test files, log files, build files, etc.
 
-1. Run `make` in the cadence-proxy project root.  Make sure the tests pass and the executables are built.
-2. Once the tests pass and the executables are built in `bin`, execute the OS specific executable.
-3. If you want to, you can run some sort of integration test to make sure that the server is working as it is supposed to.
+1. Run `make` in the cadence-proxy project root.  Make sure the tests pass and the output files are built.
+2. Once the tests pass check to make sure that the files have been built in `bin`.
+3. Run the Test.Neon.Cadence tests to make sure that the changes are working as expected.
 4. Shut down the server.
-5. Run `make clean` in the cadence-proxy project root.  This will remove test files, logs, build files, and the generated executables.
+5. Run `make clean` in the cadence-proxy project root.  This will remove test files, logs, build files, and the generated output files.
 6. Look through the `Gopkg.lock` file and document any version changes in the dependencies, or any new dependencies.  
 7. Commit
 

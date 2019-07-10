@@ -18,7 +18,9 @@
 package main
 
 import (
+	"C"
 	"flag"
+	"fmt"
 
 	globals "github.com/cadence-proxy/internal"
 	"github.com/cadence-proxy/internal/endpoints"
@@ -68,4 +70,9 @@ func main() {
 
 	// start the server
 	instance.Start()
+}
+
+//export SayBye
+func SayBye() {
+	fmt.Println("Nautilus says: Bye!")
 }
