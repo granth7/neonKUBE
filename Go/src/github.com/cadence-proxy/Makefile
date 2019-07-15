@@ -44,7 +44,7 @@ WIN := cadence-proxy.win.dll
 WIN_HEADER := cadence-proxy.win.h
 LINUX := cadence-proxy.linux.so
 LINUX_HEADER := cadence-proxy.linux.h
-OSX := cadence-proxy.osx.so
+OSX := cadence-proxy.osx.dylib
 OSX_HEADER := cadence-proxy.osx.h
 
 # Use dep to update and grab source

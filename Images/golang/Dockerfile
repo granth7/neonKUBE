@@ -7,22 +7,20 @@
 #
 # ARGUMENTS:
 #
-#   ORGANIZATION    - The Docker Hub organization
-#   BRANCH          - The current GitHub branch
 #   VERSION         - The GOLANG version (e.g. "1.9.4")
 
-ARG         ORGANIZATION
-ARG         BRANCH
-FROM        ${ORGANIZATION}/ubuntu-16.04:${BRANCH}-latest
+FROM        ubuntu:latest
 MAINTAINER  jeff@lilltek.com
 STOPSIGNAL  SIGTERM
 ARG         VERSION
 
-# Git and Nano layer
+# Git and Nano layer and
 
 RUN apt-get update \
+    && apt-get install -y --no-install-recommends apt-utils \
     && apt-get install -yq git nano \
-    && apt-get clean -yq
+    && apt-get clean -yq \
+    && apt-get install wget
 
 # Go layer
 
