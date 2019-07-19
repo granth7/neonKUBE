@@ -17,7 +17,9 @@
 
 package internal
 
-import "errors"
+import (
+	"errors"
+)
 
 const (
 

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"runtime/debug"
 	"time"
 
 	cadenceshared "go.uber.org/cadence/.gen/go/shared"
@@ -60,8 +61,10 @@ func handleIProxyRequest(request messages.IProxyRequest) error {
 		if r := recover(); r != nil {
 			reply = createReplyMessage(request)
 			buildReply(reply, cadenceerrors.NewCadenceError(
-				fmt.Sprintf("recovered from panic when processing message type: %s, RequestId: %d", request.GetType().String(), request.GetRequestID()),
-				cadenceerrors.Panic),
+				fmt.Sprintf("recovered from panic when processing message type: %s, RequestId: %d\n%s",
+					request.GetType().String(),
+					request.GetRequestID(), string(debug.Stack())),
+				cadenceerrors.Generic),
 			)
 		}
 
@@ -1769,7 +1772,7 @@ func handleWorkflowExecuteChildRequest(requestCtx context.Context, request *mess
 	)
 
 	// create the new ChildContext
-	cctx := cadenceworkflows.NewChildContext()
+	cctx := cadenceworkflows.NewChildContext(ctx)
 	cctx.SetCancelFunction(cancel)
 	cctx.SetFuture(childFuture)
 
@@ -1825,7 +1828,7 @@ func handleWorkflowWaitForChildRequest(requestCtx context.Context, request *mess
 
 	// wait on the child workflow
 	var result []byte
-	if err := cctx.GetFuture().Get(wectx.GetContext(), &result); err != nil {
+	if err := cctx.GetFuture().Get(cctx.GetContext(), &result); err != nil {
 		var cadenceError *cadenceerrors.CadenceError
 		if isCanceledErr(err) {
 			cadenceError = cadenceerrors.NewCadenceError(err.Error(), cadenceerrors.Cancelled)
@@ -2393,13 +2396,16 @@ func handleActivityHasHeartbeatDetailsRequest(requestCtx context.Context, reques
 		return reply
 	}
 
-	// create the new context and a []byte to
-	// drop the heartbeat details into
-	ctx, cancel := context.WithTimeout(requestCtx, cadenceClientTimeout)
-	defer cancel()
+	// get activity context
+	actx := ActivityContexts.Get(request.GetContextID())
+	if actx == nil {
+		buildReply(reply, cadenceerrors.NewCadenceError(globals.ErrArgumentNil.Error()))
+
+		return reply
+	}
 
 	// build the reply
-	buildReply(reply, nil, activity.HasHeartbeatDetails(ctx))
+	buildReply(reply, nil, activity.HasHeartbeatDetails(actx.GetContext()))
 
 	return reply
 }
@@ -2423,14 +2429,17 @@ func handleActivityGetHeartbeatDetailsRequest(requestCtx context.Context, reques
 		return reply
 	}
 
-	// create the new context and a []byte to
-	// drop the heartbeat details into
-	var details []byte
-	ctx, cancel := context.WithTimeout(requestCtx, cadenceClientTimeout)
-	defer cancel()
+	// get activity context
+	actx := ActivityContexts.Get(request.GetContextID())
+	if actx == nil {
+		buildReply(reply, cadenceerrors.NewCadenceError(globals.ErrArgumentNil.Error()))
+
+		return reply
+	}
 
 	// get the activity heartbeat details
-	err := activity.GetHeartbeatDetails(ctx, &details)
+	var details []byte
+	err := activity.GetHeartbeatDetails(actx.GetContext(), &details)
 	if err != nil {
 		buildReply(reply, cadenceerrors.NewCadenceError(err.Error()))
 

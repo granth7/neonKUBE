@@ -23,7 +23,7 @@ import (
 )
 
 type (
-	cancellablesMap struct {
+	CancellablesMap struct {
 		sync.Map
 	}
 
@@ -90,7 +90,7 @@ func (c *Cancellable) SetCancelFunction(value func()) {
 //
 // returns int64 -> requestID of the request being added
 // in the Cancellable at the specified requestID
-func (opMap *cancellablesMap) Add(requestID int64, value *Cancellable) int64 {
+func (opMap *CancellablesMap) Add(requestID int64, value *Cancellable) int64 {
 	opMap.Store(requestID, value)
 	return requestID
 }
@@ -103,7 +103,7 @@ func (opMap *cancellablesMap) Add(requestID int64, value *Cancellable) int64 {
 //
 // returns int64 -> requestID of the request being removed in the
 // Cancellable at the specified requestID
-func (opMap *cancellablesMap) Remove(requestID int64) int64 {
+func (opMap *CancellablesMap) Remove(requestID int64) int64 {
 	opMap.Delete(requestID)
 	return requestID
 }
@@ -116,7 +116,7 @@ func (opMap *cancellablesMap) Remove(requestID int64) int64 {
 //
 // returns *Cancellable -> pointer to Cancellable at the specified requestID
 // in the map.
-func (opMap *cancellablesMap) Get(requestID int64) *Cancellable {
+func (opMap *CancellablesMap) Get(requestID int64) *Cancellable {
 	if v, ok := opMap.Load(requestID); ok {
 		if _v, _ok := v.(*Cancellable); _ok {
 			return _v
