@@ -379,7 +379,7 @@ namespace TestCadence
         /// </summary>
         private class ParallelChildWorkflows : WorkflowBase
         {
-            public static int numParallelWorkflows = 3;
+            public static int numChildWorkflows = 3;
 
             protected async override Task<byte[]> RunAsync(byte[] args)
             {
@@ -1375,7 +1375,7 @@ namespace TestCadence
 
                 Assert.NotNull(result);
                 Assert.Equal("Great Parallel Sleep!", Encoding.UTF8.GetString(result));
-                Assert.Equal(ParallelChildWorkflows.numParallelWorkflows, ParallelWorkflow.maxParallel);
+                Assert.Equal(ParallelChildWorkflows.numChildWorkflows, ParallelWorkflow.maxParallel);
                 Assert.Equal(0, ParallelWorkflow.runningCount);
             }
         }
