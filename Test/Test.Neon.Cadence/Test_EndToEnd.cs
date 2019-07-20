@@ -345,19 +345,57 @@ namespace TestCadence
         }
 
         /// <summary>
+        /// Workflow to test if workflows are running in parallel
+        /// </summary>
+        private class ParallelWorkflow : WorkflowBase
+        {
+            private static object syncLock  = new object();
+            public static int runningCount  = 0;
+            public static int maxParallel   = 0;
+
+            protected async override Task<byte[]> RunAsync(byte[] args)
+            {
+                var sleepSeconds = NeonHelper.JsonDeserialize<Double>(args);
+                lock (syncLock)
+                {
+                    runningCount++;
+                    maxParallel  = Math.Max(runningCount, maxParallel);
+                }
+
+                await SleepAsync(TimeSpan.FromSeconds(sleepSeconds));
+
+                lock (syncLock)
+                {
+                    runningCount--;
+                }
+
+                return await Task.FromResult((byte[])null);
+            }
+        }
+
+        /// <summary>
         /// Runs two child workflows in parallel and returns "Hello World!" as the
         /// result.
         /// </summary>
         private class ParallelChildWorkflows : WorkflowBase
         {
+            public static int numParallelWorkflows = 3;
+
             protected async override Task<byte[]> RunAsync(byte[] args)
             {
-                var child1  = await StartChildWorkflowAsync<HelloWorkflow>(Encoding.UTF8.GetBytes("Hello"));
-                var child2  = await StartChildWorkflowAsync<HelloWorkflow>(Encoding.UTF8.GetBytes("World!"));
-                var result1 = await WaitForChildWorkflowAsync(child1);
-                var result2 = await WaitForChildWorkflowAsync(child2);
+                var sleepTime1  = 10.00;
+                var sleepTime2  = 15.00;
+                var sleepTime3  = 5.00;
 
-                return Encoding.UTF8.GetBytes($"{Encoding.UTF8.GetString(result1)} {Encoding.UTF8.GetString(result2)}");
+                var child1      = await StartChildWorkflowAsync<ParallelWorkflow>(args: NeonHelper.JsonSerializeToBytes(sleepTime1));
+                var child2      = await StartChildWorkflowAsync<ParallelWorkflow>(args: NeonHelper.JsonSerializeToBytes(sleepTime2));
+                var child3      = await StartChildWorkflowAsync<ParallelWorkflow>(args: NeonHelper.JsonSerializeToBytes(sleepTime3));
+
+                await WaitForChildWorkflowAsync(child1);
+                await WaitForChildWorkflowAsync(child2);
+                await WaitForChildWorkflowAsync(child3);
+                
+                return Encoding.UTF8.GetBytes($"Great Parallel Sleep!");
             }
         }
 
@@ -1325,7 +1363,10 @@ namespace TestCadence
         {
             await client.RegisterDomainAsync("test-domain", ignoreDuplicates: true);
             await client.RegisterWorkflowAsync<ParallelChildWorkflows>();
-            await client.RegisterWorkflowAsync<HelloWorkflow>();
+            await client.RegisterWorkflowAsync<ParallelWorkflow>();
+
+            ParallelWorkflow.maxParallel    = 0;
+            ParallelWorkflow.runningCount   = 0;
 
             using (await client.StartWorkerAsync("test-domain"))
             {
@@ -1333,7 +1374,9 @@ namespace TestCadence
                 var result      = await client.GetWorkflowResultAsync(workflowRun);
 
                 Assert.NotNull(result);
-                Assert.Equal("Hello World!", Encoding.UTF8.GetString(result));
+                Assert.Equal("Great Parallel Sleep!", Encoding.UTF8.GetString(result));
+                Assert.Equal(ParallelChildWorkflows.numParallelWorkflows, ParallelWorkflow.maxParallel);
+                Assert.Equal(0, ParallelWorkflow.runningCount);
             }
         }
 
