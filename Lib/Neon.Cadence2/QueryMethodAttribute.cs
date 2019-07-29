@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    DomainUpdateInfo.cs
+// FILE:	    QueryMethodAttribute.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 
 using Neon.Cadence;
 using Neon.Cadence.Internal;
@@ -26,18 +27,26 @@ using Neon.Common;
 namespace Neon.Cadence
 {
     /// <summary>
-    /// Holds the changes to be made to a Cadence domain's basic properties.
+    /// Used to tag a <see cref="Workflow"/> method that will be called to handle an
+    /// external query.
     /// </summary>
-    public class DomainUpdateInfo
+    [AttributeUsage(AttributeTargets.Method)]
+    public class QueryMethodAttribute : Attribute
     {
         /// <summary>
-        /// The updated domain description.
+        /// Constructor.
         /// </summary>
-        public string Description { get; set; }
+        /// <param name="queryName">Specifies the Cadence query name.</param>
+        public QueryMethodAttribute(string queryName)
+        {
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(queryName));
+
+            this.Name = queryName;
+        }
 
         /// <summary>
-        /// The updated domain owner's email address.
+        /// Returns the query name. 
         /// </summary>
-        public string OwnerEmail { get; set; }
+        public string Name { get; private set; }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    ConnectionMode.cs
+// FILE:	    IWorkflow.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 using Neon.Cadence;
 using Neon.Cadence.Internal;
@@ -26,20 +28,9 @@ using Neon.Common;
 namespace Neon.Cadence
 {
     /// <summary>
-    /// Enumerates the Cadence connection modes.
+    /// All application workflow interface definitions must derive from this interface.
     /// </summary>
-    public enum ConnectionMode
+    public interface IWorkflow
     {
-        /// <summary>
-        /// Connect to a Cadence cluster via the <b>cadence-proxy</b>.
-        /// </summary>
-        Normal = 0,
-
-        /// <summary>
-        /// <b>INTERNAL USE:</b> Start the connection's proxy listener but don't
-        /// launch the proxy and attempt to connect to a Cadence cluster.  This
-        /// mode is used for unit testing.
-        /// </summary>
-        ListenOnly
     }
 }

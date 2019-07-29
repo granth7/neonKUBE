@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    ChildTerminationPolicy.cs
+// FILE:	    ChildPolicy.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -29,9 +29,9 @@ namespace Neon.Cadence
     /// Enumerates the possible child workflow behaviors when the parent
     /// workflow is terminated.
     /// </summary>
-    public enum ChildTerminationPolicy
+    public enum ChildPolicy
     {
-        // WARNING: These definitions must match those defined for [InternalChildTerminationPolicy].
+        // WARNING: These definitions must match those defined for [InternalChildPolicy].
 
         /// <summary>
         /// <para>

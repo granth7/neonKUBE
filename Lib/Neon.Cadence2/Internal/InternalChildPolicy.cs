@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    WorkflowResetPoint.cs
+// FILE:	    InternalChildPolicy.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -23,47 +23,41 @@ using Neon.Cadence;
 using Neon.Cadence.Internal;
 using Neon.Common;
 
-namespace Neon.Cadence
+namespace Neon.Cadence.Internal
 {
     /// <summary>
-    /// <para>
-    /// Not sure what is for.
-    /// </para>
-    /// <note>
-    /// I'm making this <c>internal</c> for now until we decide it makes sense
-    /// to expose this to .NET workflow applications.
-    /// </note>
+    /// <b>INTERNAL USE ONLY:</b> Enumerates the possible child workflow behaviors 
+    /// when the parent workflow is terminated.
     /// </summary>
-    internal class WorkflowResetPoint
+    public enum InternalChildPolicy
     {
-        /// <summary>
-        /// Not sure what is.
-        /// </summary>
-        public string BinaryChecksum { get; internal set; }
+        // WARNING: These definitions must match those defined for [ChildPolicy].
 
         /// <summary>
-        /// Not sure what is.
+        /// <para>
+        /// All open child workflows will be terminated when parent workflow is terminated.
+        /// </para>
+        /// <note>
+        /// This policy is not implemented.
+        /// </note>
         /// </summary>
-        public string RunId { get; internal set; }
+        TERMINATE = 0,
 
         /// <summary>
-        /// Not sure what is.
+        /// <para>
+        /// Cancel requests will be sent to all open child workflows to all open child 
+        /// workflows when parent workflow is terminated.
+        /// </para>
+        /// <note>
+        /// This policy is not implemented.
+        /// </note>
         /// </summary>
-        public long FirstDecisionCompletedId { get; internal set; }
+        REQUEST_CANCEL = 1,
 
         /// <summary>
-        /// Not sure what is.
+        /// Child workflow execution will continue unaffected when parent workflow is
+        /// terminated.  This is the default policy.
         /// </summary>
-        public DateTime CreatedTime { get; internal set; }
-
-        /// <summary>
-        /// Not sure what is.
-        /// </summary>
-        public DateTime ExpiringTime { get; internal set; }
-
-        /// <summary>
-        /// Not sure what is.
-        /// </summary>
-        public bool Resettable { get; internal set; }
+        ABANDON = 2
     }
 }

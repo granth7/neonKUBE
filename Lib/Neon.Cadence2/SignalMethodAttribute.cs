@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    ChildWorkflow.cs
+// FILE:	    SignalMethodAttribute.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -18,33 +18,35 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
+using System.Diagnostics.Contracts;
 
 using Neon.Cadence;
+using Neon.Cadence.Internal;
 using Neon.Common;
 
 namespace Neon.Cadence
 {
     /// <summary>
-    /// Returned by <see cref="WorkflowBase.StartChildWorkflowAsync(string, byte[], Internal.ChildWorkflowOptions, CancellationToken)"/>
-    /// to identify the new child workflow.  This valie can then be used to perform
-    /// operations on the workflow like: <see cref="WorkflowBase.SignalChildWorkflowAsync(ChildWorkflow, string, byte[])"/>,
-    /// <see cref="WorkflowBase.CancelChildWorkflowAsync(ChildWorkflow)"/> and <see cref="WorkflowBase.WaitForChildWorkflowAsync(ChildWorkflow, CancellationToken)"/>.
+    /// Used to tag a <see cref="Workflow"/> method that will be called to handle an
+    /// external signal.
     /// </summary>
-    public struct ChildWorkflow
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SignalMethodAttribute : Attribute
     {
         /// <summary>
-        /// Internal constructor.
+        /// Constructor.
         /// </summary>
-        /// <param name="childId">The child workflow's local ID.</param>
-        internal ChildWorkflow(long childId)
+        /// <param name="signalName">Specifies the Cadence signal name.</param>
+        public SignalMethodAttribute(string signalName)
         {
-            this.Id = childId;
+            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(signalName));
+
+            this.Name = signalName;
         }
 
         /// <summary>
-        /// Returns the child workflow's local ID.
+        /// Returns the signal name. 
         /// </summary>
-        internal long Id { get; private set; }
+        public string Name { get; private set; }
     }
 }

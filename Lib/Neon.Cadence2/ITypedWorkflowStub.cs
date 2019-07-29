@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    SignalHandlerAttribute.cs
+// FILE:	    ITypedWorkflowStub.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -18,7 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 using Neon.Cadence;
 using Neon.Cadence.Internal;
@@ -27,26 +28,10 @@ using Neon.Common;
 namespace Neon.Cadence
 {
     /// <summary>
-    /// Used to tag a <see cref="WorkflowBase"/> method that will be called to handle an
-    /// external signal.
+    /// All generated typed workflow stubs will derive from this (do-nothing) interface
+    /// for type-checking purposes.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    public class SignalHandlerAttribute : Attribute
+    public interface ITypedWorkflowStub
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="signalName">Specifies the Cadence signal name.</param>
-        public SignalHandlerAttribute(string signalName)
-        {
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(signalName));
-
-            this.Name = signalName;
-        }
-
-        /// <summary>
-        /// Returns the signal name. 
-        /// </summary>
-        public string Name { get; private set; }
     }
 }

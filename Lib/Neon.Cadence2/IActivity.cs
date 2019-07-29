@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    QueryHandlerAttribute.cs
+// FILE:	    IActivity.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -18,7 +18,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 using Neon.Cadence;
 using Neon.Cadence.Internal;
@@ -27,26 +28,9 @@ using Neon.Common;
 namespace Neon.Cadence
 {
     /// <summary>
-    /// Used to tag a <see cref="WorkflowBase"/> method that will be called to handle an
-    /// external query.
+    /// All application activity interface definitions must derive from this interface.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
-    public class QueryHandlerAttribute : Attribute
+    public interface IActivity
     {
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="queryName">Specifies the Cadence query name.</param>
-        public QueryHandlerAttribute(string queryName)
-        {
-            Covenant.Requires<ArgumentNullException>(!string.IsNullOrEmpty(queryName));
-
-            this.Name = queryName;
-        }
-
-        /// <summary>
-        /// Returns the query name. 
-        /// </summary>
-        public string Name { get; private set; }
     }
 }

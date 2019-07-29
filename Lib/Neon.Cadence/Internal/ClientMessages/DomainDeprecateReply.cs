@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    WorkflowCloseStatus.cs
+// FILE:	    DomainDeprecateReply.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -20,46 +20,38 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Neon.Cadence;
-using Neon.Cadence.Internal;
 using Neon.Common;
 
-namespace Neon.Cadence
+namespace Neon.Cadence.Internal
 {
     /// <summary>
-    /// Enumerates the possible reasons why a workflow was closed.
+    /// <b>proxy --> client:</b> Answers a <see cref="DomainDeprecateRequest"/>.
     /// </summary>
-    public enum WorkflowCloseStatus
+    [InternalProxyMessage(InternalMessageTypes.DomainDeprecateReply)]
+    internal class DomainDeprecateReply : ProxyReply
     {
-        // WARNING: These values must match those defined by [InternalWorkflowCloseState].
-
         /// <summary>
-        /// The workflow completed successfully.
+        /// Default constructor.
         /// </summary>
-        Completed = 0,
+        public DomainDeprecateReply()
+        {
+            Type = InternalMessageTypes.DomainDeprecateReply;
+        }
 
-        /// <summary>
-        /// The workflow failed.
-        /// </summary>
-        Failed = 1,
+        /// <inheritdoc/>
+        internal override ProxyMessage Clone()
+        {
+            var clone = new DomainDeprecateReply();
 
-        /// <summary>
-        /// The workflow was cancelled.
-        /// </summary>
-        Cancelled = 2,
+            CopyTo(clone);
 
-        /// <summary>
-        /// The workflow was terminated.
-        /// </summary>
-        Terminated = 3,
+            return clone;
+        }
 
-        /// <summary>
-        /// The workflow was restarted (aka <i>continued as new</i>).
-        /// </summary>
-        Restarted = 4,
-
-        /// <summary>
-        /// The workflow timed out.
-        /// </summary>
-        Timedout = 5
+        /// <inheritdoc/>
+        protected override void CopyTo(ProxyMessage target)
+        {
+            base.CopyTo(target);
+        }
     }
 }

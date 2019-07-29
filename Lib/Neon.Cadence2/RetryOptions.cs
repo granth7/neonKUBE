@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    CadenceRetryPolicy.cs
+// FILE:	    RetryOptions.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -31,12 +31,12 @@ namespace Neon.Cadence
     /// <summary>
     /// Describes a Cadence retry policy.
     /// </summary>
-    public class CadenceRetryPolicy
+    public class RetryOptions
     {
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public CadenceRetryPolicy()
+        public RetryOptions()
         {
         }
 
@@ -44,7 +44,7 @@ namespace Neon.Cadence
         /// Constructs an instance from a <see cref="LinearRetryPolicy"/>.
         /// </summary>
         /// <param name="policy">The policy.</param>
-        public CadenceRetryPolicy(LinearRetryPolicy policy)
+        public RetryOptions(LinearRetryPolicy policy)
         {
             Covenant.Requires<ArgumentNullException>(policy != null);
 
@@ -60,10 +60,10 @@ namespace Neon.Cadence
         }
 
         /// <summary>
-        /// Constructs an instance froma <see cref="ExponentialRetryPolicy"/>,
+        /// Constructs an instance from a <see cref="ExponentialRetryPolicy"/>,
         /// </summary>
         /// <param name="policy">The policy.</param>
-        public CadenceRetryPolicy(ExponentialRetryPolicy policy)
+        public RetryOptions(ExponentialRetryPolicy policy)
         {
             Covenant.Requires<ArgumentNullException>(policy != null);
 
@@ -113,9 +113,15 @@ namespace Neon.Cadence
         /// </summary>
         public int MaximumAttempts { get; set; }
 
+        // $todo(jeff.lill):
+        //
+        // We'd align better with the Java client if this was a list of [CadenceException] derived
+        // exceptions rather than GOLANG error strings.  We'll revist this when the port is further
+        // along.
+
         /// <summary>
         /// <para>
-        /// Specifies Cadence errors that should not be retried. This is optional. Cadence server 
+        /// Specifies Cadence errors that <b>should not</b> trigger a retry. This is optional.  Cadence server 
         /// will stop retrying if error reason matches this list.  Use the <see cref="Cadence.NonRetriableErrors"/>
         /// class methods to initialize this list as required.
         /// </para>

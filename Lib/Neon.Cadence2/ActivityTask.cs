@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------------
-// FILE:	    InternalActivityInfo.cs
+// FILE:	    ActivityTask.cs
 // CONTRIBUTOR: Jeff Lill
 // COPYRIGHT:	Copyright (c) 2016-2019 by neonFORGE, LLC.  All rights reserved.
 //
@@ -27,9 +27,9 @@ using Neon.Common;
 namespace Neon.Cadence
 {
     /// <summary>
-    /// Holds informaation about an executing activity.
+    /// Holds information about an executing activity.
     /// </summary>
-    public class ActivityInfo
+    public class ActivityTask
     {
         /// <summary>
         /// The activity task token.
@@ -37,7 +37,7 @@ namespace Neon.Cadence
         public byte[] TaskToken { get; internal set; }
 
         /// <summary>
-        /// The parent workflow type name.
+        /// The parent workflow type.
         /// </summary>
         public string WorkflowTypeName { get; internal set; }
 

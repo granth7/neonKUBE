@@ -61,7 +61,11 @@ var (
 
 	// cadenceClientTimeout specifies the amount of time in seconds a reply has to be sent after
 	// a request has been received by the cadence-proxy
-	cadenceClientTimeout time.Duration = time.Second * 30
+	cadenceClientTimeout time.Duration = time.Minute
+
+	// httpClient is the HTTP client used to send requests
+	// to the Neon.Cadence client
+	httpClient = http.Client{}
 
 	// ClientHelper is a global variable that holds this cadence-proxy's instance
 	// of the ClientHelper that will be used to create domain and workflow clients
@@ -88,16 +92,12 @@ var (
 
 	// Operations is a map of operations used to track pending
 	// cadence-client operations
-	Operations = new(operationsMap)
+	Operations = new(OperationsMap)
 
 	// Cancellables is a map of golang cancel functions to requestID,
 	// used to track cancellable operations sent from the Neon.Cadence
 	// client
-	Cancellables = new(cancellablesMap)
-
-	// httpClient is the HTTP client used to send requests
-	// to the Neon.Cadence client
-	httpClient = http.Client{}
+	Cancellables = new(CancellablesMap)
 )
 
 //----------------------------------------------------------------------------
