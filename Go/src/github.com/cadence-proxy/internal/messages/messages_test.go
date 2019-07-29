@@ -2677,7 +2677,6 @@ func (s *UnitTestSuite) TestWorkflowMutableRequest() {
 		s.Nil(v.GetMutableID())
 		s.Nil(v.GetResult())
 		s.Equal(int64(0), v.GetContextID())
-		s.False(v.GetUpdate())
 
 		// Round-trip
 
@@ -2693,9 +2692,6 @@ func (s *UnitTestSuite) TestWorkflowMutableRequest() {
 
 		v.SetResult([]byte{0, 1, 2, 3, 4})
 		s.Equal([]byte{0, 1, 2, 3, 4}, v.GetResult())
-
-		v.SetUpdate(true)
-		s.True(v.GetUpdate())
 	}
 
 	proxyMessage = message.GetProxyMessage()
@@ -2711,7 +2707,6 @@ func (s *UnitTestSuite) TestWorkflowMutableRequest() {
 		s.Equal("777", *v.GetMutableID())
 		s.Equal(int64(888), v.GetContextID())
 		s.Equal([]byte{0, 1, 2, 3, 4}, v.GetResult())
-		s.True(v.GetUpdate())
 	}
 
 	message, err = s.echoToConnection(message)
@@ -2723,7 +2718,6 @@ func (s *UnitTestSuite) TestWorkflowMutableRequest() {
 		s.Equal("777", *v.GetMutableID())
 		s.Equal(int64(888), v.GetContextID())
 		s.Equal([]byte{0, 1, 2, 3, 4}, v.GetResult())
-		s.True(v.GetUpdate())
 	}
 }
 
