@@ -29,7 +29,8 @@ APP_DIR=./cmd/cadenceproxy
 LOG_DIR=./test/logs
 
 # test dirs
-NEON_TEST_DIR := $(NF_ROOT)/Test/Test.Neon.Cadence/bin/Debug/netcoreapp3.0
+CADENCESHARED_TEST_DIR := $(NF_ROOT)/Test/Test.Neon.CadenceCShared/bin/Debug/netcoreapp3.0
+CADENCE_TEST_DIR := $(NF_ROOT)/Test/Test.Neon.Cadence/bin/Debug/netcoreapp3.0
 MESSAGES_TEST_DIR=./internal/messages
 TEST_DIRS := $(MESSAGES_TEST_DIR)
 
@@ -40,12 +41,9 @@ SRC := $(APP_DIR)/main.go
 PROGS = cadenceproxy
 
 # executable names
-WIN := cadence-proxy.win.dll
-WIN_HEADER := cadence-proxy.win.h
-LINUX := cadence-proxy.linux.so
-LINUX_HEADER := cadence-proxy.linux.h
-OSX := cadence-proxy.osx.dylib
-OSX_HEADER := cadence-proxy.osx.h
+WIN = cadence-proxy.win
+LINUX = cadence-proxy.linux
+OSX = cadence-proxy.osx
 
 # Use dep to update and grab source
 # for dependencies
@@ -53,13 +51,13 @@ dep-ensured:
 	dep ensure
 
 cadence-proxy-windows: dep-ensured $(ALL_SRC)
-	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(WIN) $(APP_DIR)/*.go
+	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(WIN).dll $(APP_DIR)/*.go
 
 cadence-proxy-linux: dep-ensured $(ALL_SRC)
-	env GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(LINUX) $(APP_DIR)/*.go
+	env GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(LINUX).so $(APP_DIR)/*.go
 
 cadence-proxy-osx: dep-ensured $(ALL_SRC)
-	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(OSX) $(APP_DIR)/*.go
+	env GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o bin/$(OSX).dylib $(APP_DIR)/*.go
 
 cadenceproxy: cadence-proxy-windows \
 	cadence-proxy-linux \
@@ -106,18 +104,33 @@ clean:
 	rm -f $(LOG_DIR)/messages-cover.out
 	rm -f $(LOG_DIR)/messages-cover.html
 
-	# dll files
-	rm -f $(BUILD_DIR)/$(WIN)
+	# dynamic library files
+	rm -f $(BUILD_DIR)/$(WIN).dll
+	rm -f $(BUILD_DIR)/$(LINUX).so
+	rm -f $(BUILD_DIR)/$(OSX).dylib
+
+	# header files
+	rm -f $(BUILD_DIR)/$(WIN).h
+	rm -f $(BUILD_DIR)/$(LINUX).h
+	rm -f $(BUILD_DIR)/$(OSX).h
+
+	# Executables
+	rm -f $(BUILD_DIR)/$(WIN).exe
 	rm -f $(BUILD_DIR)/$(LINUX)
 	rm -f $(BUILD_DIR)/$(OSX)
 
-	# header files
-	rm -f $(BUILD_DIR)/$(WIN_HEADER)
-	rm -f $(BUILD_DIR)/$(LINUX_HEADER)
-	rm -f $(BUILD_DIR)/$(OSX_HEADER)
-
-	# compressed test executables
-	rm -f $(COMPRESSED_DIR)/$(WIN).gz
+	# compressed resources
+	rm -f $(COMPRESSED_DIR)/$(WIN).dll.gz
+	rm -f $(COMPRESSED_DIR)/$(LINUX).so.gz
+	rm -f $(COMPRESSED_DIR)/$(OSX).dylib.gz
+	rm -f $(COMPRESSED_DIR)/$(WIN).exe.gz
 	rm -f $(COMPRESSED_DIR)/$(LINUX).gz
 	rm -f $(COMPRESSED_DIR)/$(OSX).gz
-	rm -f $(NEON_TEST_DIR)/cadence-proxy.exe
+
+	# Test dir
+	rm -f $(CADENCE_TEST_DIR)/$(WIN).exe
+	rm -f $(CADENCE_TEST_DIR)/$(LINUX)
+	rm -f $(CADENCE_TEST_DIR)/$(OSX)
+	rm -f $(CADENCESHARED_TEST_DIR)/$(WIN).dll
+	rm -f $(CADENCESHARED_TEST_DIR)/$(LINUX).so
+	rm -f $(CADENCESHARED_TEST_DIR)/$(OSX).dylib

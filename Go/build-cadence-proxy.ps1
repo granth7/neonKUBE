@@ -37,43 +37,29 @@ if (!(test-path $buildPath))
 Set-Location $projectPath
 
 # Build the WINDOWS binary
-$env:GOOS	= "windows"
-$env:GOARCH = "amd64"
+$env:GOOS		 = "windows"
+$env:GOARCH		 = "amd64"
 go build -i -ldflags="-w -s" -v -o $buildPath\cadence-proxy.win.exe cmd\cadenceproxy\main.go
 
 $exitCode = $lastExitCode
 
 if ($exitCode -ne 0)
 {
-    Write-Error "*** ERROR: [cadence-proxy] WINDOWS build failed.  Check build logs: $logPath"
+    Write-Error "*** ERROR: [cadence-proxy] WINDOWS-EXE build failed.  Check build logs: $logPath"
     Set-Location $orgDirectory
     exit $exitCode
 }
 
-# Build the LINUX binary
-$env:GOOS   = "linux"
-$env:GOARCH = "amd64"
-go build -i -ldflags="-w -s" -v -o $buildPath\cadence-proxy.linux cmd\cadenceproxy\main.go
+$env:GOOS		 = "windows"
+$env:GOARCH		 = "amd64"
+$env:CGO_ENABLED = 1
+go build -i -v -buildmode=c-shared -o $buildPath\cadence-proxy.win.dll cmd\cadenceproxy\main.go
 
 $exitCode = $lastExitCode
 
 if ($exitCode -ne 0)
 {
-    Write-Error "*** ERROR: [cadence-proxy] LINUX build failed.  Check build logs: $logPath"
-    Set-Location $orgDirectory
-    exit $exitCode
-}
-
-# Build the OSX binary
-$env:GOOS   = "darwin"
-$env:GOARCH = "amd64"
-go build -i -ldflags="-w -s" -v -o $buildPath\cadence-proxy.osx cmd\cadenceproxy\main.go
-
-$exitCode = $lastExitCode
-
-if ($exitCode -ne 0)
-{
-    Write-Error "*** ERROR: [cadence-proxy] OSX build failed.  Check build logs: $logPath"
+    Write-Error "*** ERROR: [cadence-proxy] WINDOWS-DLL build failed.  Check build logs: $logPath"
     Set-Location $orgDirectory
     exit $exitCode
 }
@@ -81,16 +67,7 @@ if ($exitCode -ne 0)
 # Compress the binaries to the [Neon.Cadence] project where they'll
 # be embedded as binary resources.
 $neonCadenceResourceFolder = "$env:NF_ROOT\Lib\Neon.Cadence\Resources"
-neon-build gzip "$buildPath\cadence-proxy.linux"   "$neonCadenceResourceFolder\cadence-proxy.linux.gz"
-neon-build gzip "$buildPath\cadence-proxy.osx"     "$neonCadenceResourceFolder\cadence-proxy.osx.gz"
-neon-build gzip "$buildPath\cadence-proxy.win.exe" "$neonCadenceResourceFolder\cadence-proxy.win.exe.gz"
-
-#---------------------------------------------------------------------
-# $todo(jeff.lill): Remove this after we complete the Java-style port:
-
-$neonCadenceResourceFolder = "$env:NF_ROOT\Lib\Neon.Cadence3\Resources"
-neon-build gzip "$buildPath\cadence-proxy.linux"   "$neonCadenceResourceFolder\cadence-proxy.linux.gz"
-neon-build gzip "$buildPath\cadence-proxy.osx"     "$neonCadenceResourceFolder\cadence-proxy.osx.gz"
+neon-build gzip "$buildPath\cadence-proxy.win.dll" "$neonCadenceResourceFolder\cadence-proxy.win.dll.gz"
 neon-build gzip "$buildPath\cadence-proxy.win.exe" "$neonCadenceResourceFolder\cadence-proxy.win.exe.gz"
 #---------------------------------------------------------------------
 
